@@ -13,14 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+// use strict
 'use strict';
 
 // Initializes FriendlyChat.
+// init friendly chat
 function FriendlyChat() {
+  // this check setup
   this.checkSetup();
 
   // Shortcuts to DOM Elements.
+  // message list
   this.messageList = document.getElementById('messages');
+  // message form
   this.messageForm = document.getElementById('message-form');
   this.messageInput = document.getElementById('message');
   this.submitButton = document.getElementById('submit');
@@ -56,6 +62,18 @@ function FriendlyChat() {
 // Sets up shortcuts to Firebase features and initiate firebase auth.
 FriendlyChat.prototype.initFirebase = function() {
   // TODO(DEVELOPER): Initialize Firebase.
+
+  // firebase auth, assign this.auth
+  this.auth = firebase.auth();
+  // firebase db, assign this.db
+  this.database = firebase.database();
+  // firebase storage, assign this.storage
+  this.storage = firebase.storage();
+
+  // Initiates Firebase auth and listen to auth state changes.
+  // when auth state change, e.g. someone logins....
+  // call this on auth state changed bind(this)
+  this.auth.onAuthStateChanged(this.onAuthStateChanged.bind(this));
 };
 
 // Loads chat messages history and listens for upcoming ones.
@@ -110,30 +128,46 @@ FriendlyChat.prototype.saveImageMessage = function(event) {
 // Signs-in Friendly Chat.
 FriendlyChat.prototype.signIn = function() {
   // TODO(DEVELOPER): Sign in Firebase with credential from the Google user.
+
+  // new instance
+  // firebase, auth, google auth provider
+  var provider = new firebase.auth.GoogleAuthProvider();
+  // this.auth with signin with popup, internal
+  this.auth.signInWithPopup(provider);
 };
 
 // Signs-out of Friendly Chat.
 FriendlyChat.prototype.signOut = function() {
   // TODO(DEVELOPER): Sign out of Firebase.
+
+  this.auth.signOut();
 };
 
-// Triggers when the auth state change for instance when the user signs-in or signs-out.
+// when user sign in or signout, it will trigger
 FriendlyChat.prototype.onAuthStateChanged = function(user) {
-  if (user) { // User is signed in!
-    // Get profile pic and user's name from the Firebase user object.
-    var profilePicUrl = null;   // TODO(DEVELOPER): Get profile pic.
-    var userName = null;        // TODO(DEVELOPER): Get user's name.
+  // user is in....
+  // user is callback..... param
+  if (user) {
+    // firebase user obj
+    // user photo_url
+    var profilePicUrl = user.photoURL; // Only change these two lines!
+    // user.name
+    var userName = user.displayName;   // Only change these two lines!
 
-    // Set the user's profile pic and name.
+    // this.user_pic.style.background_img
+    // with url(.....)
     this.userPic.style.backgroundImage = 'url(' + profilePicUrl + ')';
+    // this username text content
     this.userName.textContent = userName;
 
-    // Show user's profile and sign-out button.
+    // username no hidden
     this.userName.removeAttribute('hidden');
+    // user pic no hidden
     this.userPic.removeAttribute('hidden');
+    // signout button no hidden
     this.signOutButton.removeAttribute('hidden');
 
-    // Hide sign-in button.
+    // sign in button hidden
     this.signInButton.setAttribute('hidden', 'true');
 
     // We load currently existing chant messages.
@@ -237,8 +271,12 @@ FriendlyChat.prototype.toggleButton = function() {
   }
 };
 
+// FriendlyChat, prototype, check_setup
 // Checks that the Firebase SDK has been correctly setup and configured.
 FriendlyChat.prototype.checkSetup = function() {
+  // window firebase
+  // firebase app is instance
+  // firebase.app.optoins
   if (!window.firebase || !(firebase.app instanceof Function) || !firebase.app().options) {
     window.alert('You have not configured and imported the Firebase SDK. ' +
         'Make sure you go through the codelab setup instructions and make ' +
